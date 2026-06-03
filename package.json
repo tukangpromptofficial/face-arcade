@@ -1,0 +1,12 @@
+{
+  "name": "face-arcade",
+  "version": "1.0.0",
+  "description": "Face Filter Arcade - retro arcade face filters via webcam by OPENCLAW",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

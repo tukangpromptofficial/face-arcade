@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FACE ARCADE — OpenClaw</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+    <canvas id="bgfx"></canvas>
+
+    <div id="shake">
+      <!-- TOP HUD -->
+      <header class="hud">
+        <div class="hud-left">
+          <div class="hud-label">PLAYER 1</div>
+          <div class="hud-value neon">OPENCLAW</div>
+        </div>
+        <div class="logo">
+          <span class="logo-bolt">⚡</span>
+          <span class="logo-text">FACE<span class="accent">ARCADE</span></span>
+          <span class="logo-bolt">⚡</span>
+        </div>
+        <div class="hud-right">
+          <div class="hud-row">
+            <div>
+              <div class="hud-label">SCORE</div>
+              <div class="hud-value yellow" id="score">000000</div>
+            </div>
+            <div>
+              <div class="hud-label">COMBO</div>
+              <div class="hud-value pink" id="combo">x1</div>
+            </div>
+            <div>
+              <div class="hud-label">COINS</div>
+              <div class="hud-value yellow">🪙 <span id="coins">0</span></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <!-- VIDEO ARENA -->
+        <main class="arena-wrap">
+          <div class="arena-frame">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+
+            <div class="arena-video">
+              <video id="video" autoplay playsinline muted></video>
+              <canvas id="overlay"></canvas>
+              <canvas id="fxlayer"></canvas>
+
+              <!-- HP ring -->
+              <div class="ring-hud">
+                <div class="hp-ring">
+                  <div class="hp-label">FACE LOCK</div>
+                  <div class="hp-bar-h">
+                    <div class="hp-fill-h" id="hpFill"></div>
+                  </div>
+                  <div class="hp-stat" id="lockStat">SCANNING...</div>
+                </div>
+              </div>
+
+              <!-- floating points -->
+              <div class="floating-points" id="floatingPoints"></div>
+
+              <!-- start screen -->
+              <div class="press-start" id="pressStart">
+                <div class="ps-title">FACE ARCADE</div>
+                <div class="ps-sub blink">▶ CLICK TO INSERT COIN ◀</div>
+                <div class="ps-note">need camera access</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom buttons -->
+          <div class="action-bar">
+            <button class="btn pink" id="snapBtn">📸 SNAP</button>
+            <button class="btn yellow" id="cycleBtn">🎲 RANDOM FILTER</button>
+            <button class="btn red" id="shakeBtn">💥 SHAKE</button>
+            <button class="btn green" id="muteBtn">🔇 MIRROR</button>
+          </div>
+        </main>
+
+        <!-- SIDE PANEL -->
+        <aside class="side-panel">
+          <div class="panel">
+            <div class="panel-title">⚔ FILTER ROSTER</div>
+            <div class="filter-grid" id="filterGrid"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">🎨 EFFECT MODE</div>
+            <div class="effect-grid" id="effectGrid"></div>
+          </div>
+
+          <div class="panel snapshot-panel">
+            <div class="panel-title">📸 SNAPSHOTS</div>
+            <div class="snap-strip" id="snapStrip">
+              <div class="snap-empty">no snaps yet — press SNAP</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="footer">
+        <span>BUILT BY <b>OPENCLAW</b></span>
+        <span class="pipe">|</span>
+        <span id="status">CAMERA IDLE</span>
+        <span class="pipe">|</span>
+        <span><span id="fps">--</span> FPS</span>
+        <span class="pipe">|</span>
+        <span>
+          <kbd>SPACE</kbd> SNAP
+          <span class="dim">•</span>
+          <kbd>F</kbd> RANDOM
+          <span class="dim">•</span>
+          <kbd>1-9</kbd> FILTER
+        </span>
+      </footer>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-stack" id="toasts"></div>
+    <!-- Overlay big text -->
+    <div class="overlay" id="overlay-big"></div>
+
+    <script type="module" src="/game.js"></script>
+  </body>
+</html>
