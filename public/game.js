@@ -28,6 +28,182 @@ let lastFps = 60;
 let frameCount = 0;
 let fpsLastT = performance.now();
 let mirror = true;
+let currentEnemy = null;
+let enemyKills = 0;
+let lastHitT = 0;
+
+/* ============ ENEMIES ============ */
+const ENEMY_TYPES = [
+  { emoji: "👾", name: "ALIEN GRUNT", hp: 3, speed: 2.2, size: 1.0, color: "#00ff66" },
+  { emoji: "👻", name: "BOO GHOST", hp: 5, speed: 1.4, size: 1.1, color: "#ff2bd6" },
+  { emoji: "🦇", name: "VAMPIRE BAT", hp: 4, speed: 2.6, size: 0.9, color: "#9d00ff", zigzag: true },
+  { emoji: "🤖", name: "MEGA BOT", hp: 8, speed: 1.0, size: 1.3, color: "#00ffe7" },
+  { emoji: "🧟", name: "ZOMBIE", hp: 6, speed: 0.9, size: 1.1, color: "#00ff66" },
+  { emoji: "🐍", name: "VENOM SNAKE", hp: 5, speed: 1.8, size: 1.0, color: "#fff200", sine: true },
+  { emoji: "👹", name: "ONI BRUTE", hp: 10, speed: 1.1, size: 1.3, color: "#ff2244" },
+  { emoji: "🐉", name: "BOSS DRAGON", hp: 15, speed: 1.5, size: 1.5, color: "#ff8a00", isBoss: true },
+  { emoji: "💀", name: "REAPER", hp: 7, speed: 1.6, size: 1.1, color: "#ffffff" },
+  { emoji: "🦑", name: "SQUID LORD", hp: 6, speed: 1.3, size: 1.2, color: "#ff2bd6" },
+];
+
+function spawnEnemy() {
+  let type;
+  // Boss every 5 kills, otherwise random non-boss
+  if (enemyKills > 0 && enemyKills % 5 === 0) {
+    type = ENEMY_TYPES.find((t) => t.isBoss);
+  } else {
+    const pool = ENEMY_TYPES.filter((t) => !t.isBoss);
+    type = pool[Math.floor(Math.random() * pool.length)];
+  }
+  const edge = Math.floor(Math.random() * 4);
+  let x, y;
+  if (edge === 0) { x = Math.random(); y = -0.1; }
+  else if (edge === 1) { x = 1.1; y = Math.random(); }
+  else if (edge === 2) { x = Math.random(); y = 1.1; }
+  else { x = -0.1; y = Math.random(); }
+  currentEnemy = {
+    ...type,
+    maxHp: type.hp,
+    x, y,
+    vx: (Math.random() - 0.5) * 0.004 * type.speed,
+    vy: (Math.random() - 0.5) * 0.004 * type.speed,
+    t: 0,
+    flash: 0,
+    dying: false,
+  };
+  toast(`⚠ ${type.name} APPROACHING`, type.isBoss ? "red" : "yellow");
+  if (type.isBoss) bigText("BOSS!");
+}
+
+function updateEnemy(w, h) {
+  if (!currentEnemy) return;
+  const e = currentEnemy;
+  e.t += 0.016;
+  e.flash *= 0.85;
+
+  if (e.dying) {
+    e.y -= 0.008;
+    e.size *= 0.96;
+    if (e.size < 0.1) {
+      currentEnemy = null;
+      setTimeout(spawnEnemy, 600);
+    }
+    return;
+  }
+
+  // Wandering motion
+  if (e.sine) {
+    e.x += e.vx + Math.sin(e.t * 2) * 0.003;
+    e.y += e.vy * 0.5;
+  } else if (e.zigzag) {
+    e.x += Math.sin(e.t * 4) * 0.006 * e.speed;
+    e.y += e.vy;
+  } else {
+    e.x += e.vx;
+    e.y += e.vy;
+  }
+  // Bounce off edges
+  if (e.x < 0.08) { e.x = 0.08; e.vx = Math.abs(e.vx); }
+  if (e.x > 0.92) { e.x = 0.92; e.vx = -Math.abs(e.vx); }
+  if (e.y < 0.12) { e.y = 0.12; e.vy = Math.abs(e.vy); }
+  if (e.y > 0.88) { e.y = 0.88; e.vy = -Math.abs(e.vy); }
+  // Slow drift toward face if locked
+  if (lastFace) {
+    const fx = lastFace[1].x;
+    const fy = lastFace[1].y;
+    const dx = fx - e.x;
+    const dy = fy - e.y;
+    const d = Math.hypot(dx, dy) + 0.001;
+    const pull = 0.0008 * e.speed;
+    e.vx = e.vx * 0.96 + (dx / d) * pull * 0.3;
+    e.vy = e.vy * 0.96 + (dy / d) * pull * 0.3;
+  }
+}
+
+function drawEnemy(ctx, w, h) {
+  if (!currentEnemy) return;
+  const e = currentEnemy;
+  const cx = e.x * w;
+  const cy = e.y * h;
+  const baseSize = Math.min(w, h) * 0.18 * e.size;
+
+  ctx.save();
+  if (e.flash > 0.1) {
+    ctx.shadowColor = "#ff2244";
+    ctx.shadowBlur = 40 * e.flash;
+  } else {
+    ctx.shadowColor = e.color;
+    ctx.shadowBlur = 20;
+  }
+  // Slight bobbing
+  const bob = Math.sin(e.t * 4) * 6;
+  ctx.font = `${baseSize}px serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(e.emoji, cx, cy + bob);
+  ctx.restore();
+
+  if (!e.dying) {
+    // HP bar above
+    const barW = baseSize * 1.2;
+    const barH = 10;
+    const barX = cx - barW / 2;
+    const barY = cy - baseSize * 0.7;
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+    const pct = Math.max(0, e.hp / e.maxHp);
+    ctx.fillStyle = pct > 0.5 ? "#00ff66" : pct > 0.25 ? "#fff200" : "#ff2244";
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    // Name label
+    ctx.fillStyle = e.color;
+    ctx.font = `bold 12px "Press Start 2P", monospace`;
+    ctx.textBaseline = "bottom";
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 4;
+    ctx.fillText(`${e.name} ${e.hp}/${e.maxHp}`, cx, barY - 6);
+  }
+}
+
+function checkEnemyHit(face, w, h, now) {
+  if (!currentEnemy || currentEnemy.dying) return;
+  if (now - lastHitT < 220) return;
+  const e = currentEnemy;
+  // Head bounding circle: use forehead (10), chin (152), left ear (234), right ear (454)
+  const forehead = face[10];
+  const chin = face[152];
+  const lEar = face[234];
+  const rEar = face[454];
+  const headCx = (forehead.x + chin.x + lEar.x + rEar.x) / 4;
+  const headCy = (forehead.y + chin.y + lEar.y + rEar.y) / 4;
+  const headR =
+    Math.max(
+      Math.hypot(forehead.x - chin.x, forehead.y - chin.y),
+      Math.hypot(lEar.x - rEar.x, lEar.y - rEar.y),
+    ) * 0.55;
+  // Enemy radius (normalized)
+  const eR = (Math.min(w, h) * 0.18 * e.size) / w / 2;
+  const dist = Math.hypot(headCx - e.x, headCy - e.y);
+  if (dist < headR + eR) {
+    e.hp -= 1;
+    e.flash = 1;
+    lastHitT = now;
+    score += 50 * combo;
+    $("score").textContent = String(score).padStart(6, "0");
+    popPoints(face, "-1 HP", "yellow");
+    shake();
+    if (e.hp <= 0) {
+      e.dying = true;
+      enemyKills++;
+      const bonus = e.isBoss ? 5000 : 1000;
+      score += bonus;
+      coins += e.isBoss ? 20 : 5;
+      $("score").textContent = String(score).padStart(6, "0");
+      $("coins").textContent = coins;
+      bigText(e.isBoss ? "BOSS DOWN!" : "K.O.!");
+      toast(`💀 ${e.name} DEFEATED +${bonus}`, "yellow");
+    }
+  }
+}
 
 /* ============ FILTERS ============ */
 // Each filter draws on the overlay canvas given landmarks
@@ -427,7 +603,14 @@ async function renderFrame() {
         mouthOpenCount = now;
       }
     }
+
+    // Enemy collision
+    checkEnemyHit(lastFace, w, h, now);
   }
+
+  // Enemy update + draw (always, even if no face)
+  updateEnemy(w, h);
+  drawEnemy(octx, w, h);
 
   if (mirror) {
     octx.restore();
@@ -555,6 +738,7 @@ async function startCamera() {
     requestAnimationFrame(renderFrame);
     bigText("READY!");
     toast("⚔ FIGHT THE LENS!", "pink");
+    setTimeout(spawnEnemy, 1500);
   } catch (e) {
     console.error("camera err", e);
     $("status").textContent = "✕ CAMERA " + (e.name || "ERR");
