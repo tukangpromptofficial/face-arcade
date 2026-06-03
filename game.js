@@ -107,16 +107,25 @@ function updateEnemy(w, h) {
   if (e.x > 0.92) { e.x = 0.92; e.vx = -Math.abs(e.vx); }
   if (e.y < 0.12) { e.y = 0.12; e.vy = Math.abs(e.vy); }
   if (e.y > 0.88) { e.y = 0.88; e.vy = -Math.abs(e.vy); }
-  // Slow drift toward face if locked
+  // Evade face — push away, stronger when closer
   if (lastFace) {
     const fx = lastFace[1].x;
     const fy = lastFace[1].y;
-    const dx = fx - e.x;
-    const dy = fy - e.y;
+    const dx = e.x - fx;
+    const dy = e.y - fy;
     const d = Math.hypot(dx, dy) + 0.001;
-    const pull = 0.0008 * e.speed;
-    e.vx = e.vx * 0.96 + (dx / d) * pull * 0.3;
-    e.vy = e.vy * 0.96 + (dy / d) * pull * 0.3;
+    if (d < 0.35) {
+      const push = 0.003 * e.speed * (1 - d / 0.35);
+      e.vx = e.vx * 0.9 + (dx / d) * push;
+      e.vy = e.vy * 0.9 + (dy / d) * push;
+    }
+  }
+  // Velocity cap
+  const vmax = 0.012 * e.speed;
+  const vmag = Math.hypot(e.vx, e.vy);
+  if (vmag > vmax) {
+    e.vx = (e.vx / vmag) * vmax;
+    e.vy = (e.vy / vmag) * vmax;
   }
 }
 
@@ -566,15 +575,6 @@ async function renderFrame() {
         console.warn("filter err", id, e);
       }
     });
-
-    // Scoring on face presence
-    if (now - lastDetectTime > 500) {
-      lastDetectTime = now;
-      score += 10 * combo;
-      coins += Math.random() < 0.05 ? 1 : 0;
-      $("score").textContent = String(score).padStart(6, "0");
-      $("coins").textContent = coins;
-    }
 
     // Blink combo
     if (detectBlink(lastFace)) {
