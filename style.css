@@ -102,6 +102,31 @@ body {
   gap: 18px;
   justify-content: flex-end;
 }
+.player-hp {
+  margin-top: 8px;
+  max-width: 220px;
+}
+.player-hp-label {
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  color: #ff2244;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.player-hp-bar {
+  height: 14px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 2px solid #ff2244;
+  border-radius: 3px;
+  overflow: hidden;
+}
+#playerHpFill {
+  height: 100%;
+  width: 100%;
+  background: #00ff66;
+  transition: width 0.25s, background 0.25s;
+  box-shadow: 0 0 12px currentColor;
+}
 .hud-label {
   font-family: "Press Start 2P", monospace;
   font-size: 8px;

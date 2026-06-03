@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=5" />
+    <link rel="stylesheet" href="style.css?v=6" />
     <script>
       // Surface JS load errors on screen (since users can't open devtools)
       window.addEventListener("error", (e) => {
@@ -49,6 +49,10 @@
         <div class="hud-left">
           <div class="hud-label">PLAYER 1</div>
           <div class="hud-value neon">OPENCLAW</div>
+          <div class="player-hp">
+            <div class="player-hp-label">❤ HP <span id="playerHpText">100/100</span></div>
+            <div class="player-hp-bar"><div id="playerHpFill"></div></div>
+          </div>
         </div>
         <div class="logo">
           <span class="logo-bolt">⚡</span>
@@ -162,6 +166,6 @@
     <!-- Overlay big text -->
     <div class="overlay" id="overlay-big"></div>
 
-    <script type="module" src="game.js?v=10"></script>
+    <script type="module" src="game.js?v=11"></script>
   </body>
 </html>
