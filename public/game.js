@@ -678,8 +678,8 @@ function bgLoop() {
 /* ============ EVENTS ============ */
 $("pressStart").addEventListener("click", async () => {
   $("pressStart").classList.add("hidden");
-  await initLandmarker();
   await startCamera();
+  await initLandmarker();
 });
 $("snapBtn").addEventListener("click", snap);
 $("cycleBtn").addEventListener("click", randomFilter);
