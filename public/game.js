@@ -107,21 +107,11 @@ function updateEnemy(w, h) {
   if (e.x > 0.92) { e.x = 0.92; e.vx = -Math.abs(e.vx); }
   if (e.y < 0.12) { e.y = 0.12; e.vy = Math.abs(e.vy); }
   if (e.y > 0.88) { e.y = 0.88; e.vy = -Math.abs(e.vy); }
-  // Evade face — push away, stronger when closer
-  if (lastFace) {
-    const fx = lastFace[1].x;
-    const fy = lastFace[1].y;
-    const dx = e.x - fx;
-    const dy = e.y - fy;
-    const d = Math.hypot(dx, dy) + 0.001;
-    if (d < 0.35) {
-      const push = 0.003 * e.speed * (1 - d / 0.35);
-      e.vx = e.vx * 0.9 + (dx / d) * push;
-      e.vy = e.vy * 0.9 + (dy / d) * push;
-    }
-  }
+  // Small random jitter so it wanders unpredictably
+  e.vx += (Math.random() - 0.5) * 0.0008;
+  e.vy += (Math.random() - 0.5) * 0.0008;
   // Velocity cap
-  const vmax = 0.012 * e.speed;
+  const vmax = 0.008 * e.speed;
   const vmag = Math.hypot(e.vx, e.vy);
   if (vmag > vmax) {
     e.vx = (e.vx / vmag) * vmax;
