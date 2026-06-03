@@ -484,13 +484,13 @@ async function initLandmarker() {
   try {
     if (!FaceLandmarker) {
       const mod = await import(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/vision_bundle.mjs"
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs"
       );
       FaceLandmarker = mod.FaceLandmarker;
       FilesetResolver = mod.FilesetResolver;
     }
     const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm",
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm",
     );
     landmarker = await FaceLandmarker.createFromOptions(vision, {
       baseOptions: {
