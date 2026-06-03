@@ -507,7 +507,24 @@ async function initLandmarker() {
 }
 
 /* ============ CAMERA ============ */
+function showFatalError(title, detail) {
+  const ps = $("pressStart");
+  ps.classList.remove("hidden");
+  ps.innerHTML = `
+    <div class="ps-title" style="color:#ff2244">${title}</div>
+    <div class="ps-sub" style="font-size:11px;line-height:1.6;max-width:560px;color:#fff;text-align:left">${detail}</div>
+    <div class="ps-note" style="margin-top:18px;color:#fff200">▶ TAP TO RETRY ◀</div>
+  `;
+}
+
 async function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showFatalError(
+      "NO CAMERA API",
+      `Browser ini ga support getUserMedia.<br>Origin: <code>${location.origin}</code><br>Coba browser lain (Chrome/Safari terbaru).`,
+    );
+    return;
+  }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 1280 }, height: { ideal: 960 }, facingMode: "user" },
@@ -523,9 +540,20 @@ async function startCamera() {
     bigText("READY!");
     toast("⚔ FIGHT THE LENS!", "pink");
   } catch (e) {
-    console.error(e);
-    $("status").textContent = "✕ CAMERA DENIED";
-    toast("camera permission needed", "red");
+    console.error("camera err", e);
+    $("status").textContent = "✕ CAMERA " + (e.name || "ERR");
+    const tips = {
+      NotAllowedError:
+        "Permission ditolak / di-block.<br>1. Klik icon kamera/gembok di address bar<br>2. Allow camera untuk site ini<br>3. Reload page",
+      NotFoundError: "Ga ada camera ke-detect. Pastikan webcam nyala & ga dipake app lain.",
+      NotReadableError: "Camera lagi dipake aplikasi lain (Zoom/Meet/etc). Tutup dulu.",
+      OverconstrainedError: "Camera ga support resolusi yang diminta.",
+      SecurityError: "Origin ga aman. Harus HTTPS atau localhost.",
+    };
+    showFatalError(
+      `CAMERA ${e.name || "ERROR"}`,
+      `<b>${e.message || e}</b><br><br>${tips[e.name] || "Unknown error. Check console (F12)."}`,
+    );
   }
 }
 
