@@ -358,6 +358,7 @@ async function renderFrame() {
       }
     } catch (e) {
       console.error("detect err", e);
+      $("status").textContent = "✕ DETECT ERR: " + (e.message || e.name);
     }
   }
 
@@ -492,21 +493,32 @@ async function initLandmarker() {
     const vision = await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm",
     );
-    landmarker = await FaceLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-        delegate: "GPU",
-      },
-      outputFaceBlendshapes: false,
-      runningMode: "VIDEO",
-      numFaces: 1,
-    });
-    $("status").textContent = "● FACE DETECT READY";
+    const baseOptions = {
+      modelAssetPath:
+        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+    };
+    try {
+      landmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { ...baseOptions, delegate: "GPU" },
+        outputFaceBlendshapes: false,
+        runningMode: "VIDEO",
+        numFaces: 1,
+      });
+      $("status").textContent = "● FACE DETECT READY (GPU)";
+    } catch (gpuErr) {
+      console.warn("GPU delegate failed, falling back to CPU", gpuErr);
+      landmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { ...baseOptions, delegate: "CPU" },
+        outputFaceBlendshapes: false,
+        runningMode: "VIDEO",
+        numFaces: 1,
+      });
+      $("status").textContent = "● FACE DETECT READY (CPU)";
+    }
   } catch (e) {
     console.error("landmarker init", e);
-    $("status").textContent = "✕ FACE DETECT FAILED";
-    toast("Face detector failed to load", "red");
+    $("status").textContent = "✕ FACE DETECT FAILED: " + (e.message || e.name);
+    toast("Face detector failed: " + (e.message || e.name), "red");
   }
 }
 
