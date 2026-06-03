@@ -39,6 +39,28 @@
     </script>
   </head>
   <body>
+    <button id="diagBtn" style="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99998;background:#ff2bd6;color:#fff;border:3px solid #fff;font:bold 14px monospace;padding:14px 20px;cursor:pointer;box-shadow:0 0 20px #ff2bd6">🎥 DIAG: REQUEST CAMERA NOW</button>
+    <div id="diagOut" style="position:fixed;top:70px;left:10px;right:10px;z-index:99998;background:#000;color:#0f0;font:12px monospace;padding:8px;white-space:pre-wrap;max-height:30vh;overflow:auto"></div>
+    <script>
+      const dlog = (m) => { const o = document.getElementById("diagOut"); o.textContent += m + "\n"; o.scrollTop = o.scrollHeight; };
+      dlog("page loaded @ " + new Date().toISOString());
+      dlog("origin: " + location.origin);
+      dlog("secure context: " + window.isSecureContext);
+      dlog("mediaDevices: " + !!navigator.mediaDevices);
+      dlog("getUserMedia: " + !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+      document.getElementById("diagBtn").addEventListener("click", async () => {
+        dlog("--- click fired ---");
+        try {
+          dlog("calling getUserMedia...");
+          const s = await navigator.mediaDevices.getUserMedia({ video: true });
+          dlog("✓ GOT STREAM tracks=" + s.getTracks().length);
+          s.getTracks().forEach((t) => dlog("  track: " + t.kind + " " + t.label));
+          s.getTracks().forEach((t) => t.stop());
+        } catch (e) {
+          dlog("✕ ERROR: " + e.name + " — " + e.message);
+        }
+      });
+    </script>
     <div class="scanlines"></div>
     <div class="vignette"></div>
     <canvas id="bgfx"></canvas>
