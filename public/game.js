@@ -53,10 +53,10 @@ const BOSS_TYPES = [
   // Normal boss — still hit-to-kill
   { emoji: "🐉", name: "DRAGON BOSS", hp: 15, speed: 1.5, size: 1.5, color: "#ff8a00", isBoss: true },
   // Aggressive bosses — EVADE THEM, they damage YOU on contact
-  { emoji: "☠️", name: "DEATH BOSS", speed: 1.0, size: 1.6, color: "#ff2244", isBoss: true, aggressive: true, dmg: 12, surviveTime: 15 },
-  { emoji: "😈", name: "DEVIL BOSS", speed: 1.6, size: 1.4, color: "#ff2244", isBoss: true, aggressive: true, dmg: 8, surviveTime: 12 },
-  { emoji: "👺", name: "TENGU BOSS", speed: 1.3, size: 1.5, color: "#ff8a00", isBoss: true, aggressive: true, dmg: 10, surviveTime: 14 },
-  { emoji: "🔥", name: "INFERNO BOSS", speed: 0.9, size: 1.7, color: "#ff2244", isBoss: true, aggressive: true, dmg: 15, surviveTime: 18 },
+  { emoji: "☠️", name: "DEATH BOSS", speed: 0.5, size: 1.6, color: "#ff2244", isBoss: true, aggressive: true, dmg: 12, surviveTime: 12 },
+  { emoji: "😈", name: "DEVIL BOSS", speed: 0.7, size: 1.4, color: "#ff2244", isBoss: true, aggressive: true, dmg: 8, surviveTime: 10 },
+  { emoji: "👺", name: "TENGU BOSS", speed: 0.6, size: 1.5, color: "#ff8a00", isBoss: true, aggressive: true, dmg: 10, surviveTime: 11 },
+  { emoji: "🔥", name: "INFERNO BOSS", speed: 0.4, size: 1.7, color: "#ff2244", isBoss: true, aggressive: true, dmg: 15, surviveTime: 14 },
 ];
 
 function spawnEnemy() {
@@ -118,9 +118,9 @@ function updateEnemy(w, h) {
     const dx = fx - e.x;
     const dy = fy - e.y;
     const d = Math.hypot(dx, dy) + 0.001;
-    const chase = 0.0025 * e.speed;
-    e.vx = e.vx * 0.92 + (dx / d) * chase;
-    e.vy = e.vy * 0.92 + (dy / d) * chase;
+    const chase = 0.0012 * e.speed;
+    e.vx = e.vx * 0.94 + (dx / d) * chase;
+    e.vy = e.vy * 0.94 + (dy / d) * chase;
     // Survived long enough — flees with bonus
     if (e.survived >= e.surviveTime) {
       const bonus = 3000;
@@ -166,7 +166,7 @@ function updateEnemy(w, h) {
     e.vy += (Math.random() - 0.5) * 0.0008;
   }
   // Velocity cap
-  const vmax = (e.aggressive ? 0.012 : 0.008) * e.speed;
+  const vmax = (e.aggressive ? 0.005 : 0.008) * e.speed;
   const vmag = Math.hypot(e.vx, e.vy);
   if (vmag > vmax) {
     e.vx = (e.vx / vmag) * vmax;
