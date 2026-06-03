@@ -10,7 +10,33 @@
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=4" />
+    <script>
+      // Surface JS load errors on screen (since users can't open devtools)
+      window.addEventListener("error", (e) => {
+        const d = document.getElementById("jsErr") || (() => {
+          const x = document.createElement("div");
+          x.id = "jsErr";
+          x.style.cssText =
+            "position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff2244;color:#fff;font:12px monospace;padding:10px;white-space:pre-wrap";
+          document.body.appendChild(x);
+          return x;
+        })();
+        d.textContent +=
+          `JS ERROR: ${e.message} @ ${e.filename}:${e.lineno}:${e.colno}\n`;
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        const d = document.getElementById("jsErr") || (() => {
+          const x = document.createElement("div");
+          x.id = "jsErr";
+          x.style.cssText =
+            "position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff2244;color:#fff;font:12px monospace;padding:10px;white-space:pre-wrap";
+          document.body.appendChild(x);
+          return x;
+        })();
+        d.textContent += `PROMISE REJECT: ${e.reason}\n`;
+      });
+    </script>
   </head>
   <body>
     <div class="scanlines"></div>
@@ -136,6 +162,6 @@
     <!-- Overlay big text -->
     <div class="overlay" id="overlay-big"></div>
 
-    <script type="module" src="game.js"></script>
+    <script type="module" src="game.js?v=4"></script>
   </body>
 </html>
